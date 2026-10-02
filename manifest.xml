@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="TaskPaneApp">
+  <Id>6f1c2a4e-3b7d-4c59-9a10-5d8e2b7c4f31</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Wordavator</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="Wordavator"/>
+  <Description DefaultValue="Word count goal, writing time and completion forecast."/>
+  <IconUrl DefaultValue="https://github.com/daveos23/wordavator/blob/main/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://github.com/daveos23/wordavator/blob/main/icon-64.png"/>
+  <SupportUrl DefaultValue="https://YOUR-HOST/"/>
+  <Hosts><Host Name="Document"/></Hosts>
+  <DefaultSettings><SourceLocation DefaultValue="https://github.com/daveos23/wordavator/blob/main/taskpane.html"/></DefaultSettings>
+  <Permissions>ReadWriteDocument</Permissions>
+</OfficeApp>
