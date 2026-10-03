@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wordavator</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+:root{--bg:#f6f7f9;--ink:#1d2733;--mute:#5d6b7a;--line:#d9dee5;--acc:#c98a00;--ok:#1f7a6d;--warn:#b4432f}
+@media(prefers-color-scheme:dark){:root{--bg:#1a2029;--ink:#e8ecf1;--mute:#98a4b3;--line:#2f3844;--acc:#e8ae2e;--ok:#4fb5a5;--warn:#e27a65}}
+*{box-sizing:border-box}body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+.big{font:600 44px/1 Georgia,serif}.sub{color:var(--mute)}
+.bar{height:10px;background:var(--line);border-radius:5px;margin:12px 0 4px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s}
+.row{display:flex;gap:16px;margin:18px 0}.row div{flex:1}.n{font:600 22px Georgia,serif}
+.box{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+label{display:block;color:var(--mute);margin:8px 0 3px}input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink);font:inherit}
+button{margin-top:10px;padding:7px 14px;border:0;border-radius:4px;background:var(--ink);color:var(--bg);font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ok{color:var(--ok)}.bad{color:var(--warn)}
+.buddy{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.buddy svg{width:64px;height:64px;flex:none}
+.buddy p{margin:0;font-weight:600}
+.face{fill:var(--acc)}.ln{stroke:#1d2733;fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.fl{fill:#1d2733}
+.pop{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.pop{animation:none}}
+</style></head><body>
+<div class="buddy">
+ <svg id="av" viewBox="0 0 100 100" role="img" aria-label="Writing buddy">
+  <circle class="face" cx="50" cy="50" r="46"/>
+  <ellipse id="ck1" cx="27" cy="60" rx="7" ry="4.5" fill="#e27a65" opacity="0"/><ellipse id="ck2" cx="73" cy="60" rx="7" ry="4.5" fill="#e27a65" opacity="0"/>
+  <g id="eyes"></g><path id="mouth" class="ln"/>
+  <g id="spk" opacity="0"><path d="M88 10 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="#1d2733"/><path d="M10 20 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5z" fill="#1d2733"/></g>
+ </svg>
+ <p id="msg" aria-live="polite">Ready when you are.</p>
+</div>
+<div class="sub">Project progress</div>
+<div class="big"><span id="count">0</span> <span class="sub" style="font:16px Segoe UI">/ <span id="goal">–</span> words</span></div>
+<div class="bar" role="progressbar" aria-label="Progress toward goal"><i id="fill"></i></div>
+<div class="sub" id="pct">Set a goal to begin.</div>
+<div class="row">
+ <div><div class="n" id="today">0</div><div class="sub">words today</div></div>
+ <div><div class="n" id="time">0m</div><div class="sub">writing time today</div></div>
+</div>
+<div class="bar" role="progressbar" aria-label="Progress toward daily target" style="margin-top:-6px"><i id="dfill" style="background:var(--ok)"></i></div>
+<div class="sub" id="dpct">Set a daily target below.</div>
+<div class="row">
+ <div><div class="n" id="streak">0 days</div><div class="sub" id="streakNote">current streak</div></div>
+ <div><div class="n" id="best">0 days</div><div class="sub">longest streak</div></div>
+</div>
+<div class="box"><b>Forecast</b><div id="fc" class="sub">Write for a day or two and the forecast will appear.</div></div>
+<div class="box"><b>Project settings</b>
+ <label for="g">Word count goal</label><input id="g" type="number" min="1" placeholder="e.g. 80000">
+ <label for="dt">Daily word target</label><input id="dt" type="number" min="1" placeholder="e.g. 500">
+ <label for="d">Deadline (optional)</label><input id="d" type="date">
+ <button id="save">Save goal</button></div>
+<script>
+const $=id=>document.getElementById(id);
+let S={goal:0,daily:0,deadline:"",log:{},startDate:""},count=0,lastChange=0,lastCount=null,store;
+const day=()=>new Date().toISOString().slice(0,10);
+const IDLE=60000,TICK=2000;
+function load(){try{const v=Office.context.document.settings.get("wordavator");if(v)S=JSON.parse(v)}catch(e){}}
+function persist(){try{Office.context.document.settings.set("wordavator",JSON.stringify(S));Office.context.document.settings.saveAsync()}catch(e){}}
+async function words(){return Word.run(async c=>{const b=c.document.body;b.load("text");await c.sync();const t=b.text.trim();return t?t.split(/\s+/).length:0})}
+function fmt(s){const m=Math.round(s/60);return m<60?m+"m":Math.floor(m/60)+"h "+(m%60)+"m"}
+async function tick(){
+ count=await words();const t=day(),now=Date.now();
+ if(!S.startDate)S.startDate=t;
+ const L=S.log[t]||(S.log[t]={start:count,end:count,sec:0});
+ if(lastCount!==null&&count!==lastCount)lastChange=now;
+ if(now-lastChange<IDLE)L.sec+=TICK/1000;
+ lastCount=count;L.end=count;persist();render()}
+const prev=k=>new Date(new Date(k+"T00:00:00Z")-864e5).toISOString().slice(0,10);
+function streaks(){
+ const set=new Set(Object.keys(S.log).filter(k=>S.log[k].end>S.log[k].start)),t=day();
+ let cur=0,k=set.has(t)?t:prev(t);
+ while(set.has(k)){cur++;k=prev(k)}
+ let best=0;
+ for(const d of set){if(set.has(prev(d)))continue;let n=0,x=d;while(set.has(x)){n++;x=new Date(new Date(x+"T00:00:00Z").getTime()+864e5).toISOString().slice(0,10)}best=Math.max(best,n)}
+ const u=n=>n+(n===1?" day":" days");
+ $("streak").textContent=u(cur);$("best").textContent=u(Math.max(best,cur));
+ $("streakNote").textContent=cur&&!set.has(t)?"write today to keep it":"current streak";
+ return cur}
+const MOUTH=["M38 66 L62 66","M38 64 Q50 71 62 64","M36 62 Q50 77 64 62","M34 60 Q50 83 66 60","M34 60 Q50 86 66 60 Z"];
+const EYES=['<path class="ln" d="M32 46 L44 46 M56 46 L68 46"/>','<circle class="fl" cx="38" cy="44" r="5"/><circle class="fl" cx="62" cy="44" r="5"/>','<circle class="fl" cx="38" cy="44" r="5"/><circle class="fl" cx="62" cy="44" r="5"/>','<circle class="fl" cx="38" cy="44" r="5.5"/><circle class="fl" cx="62" cy="44" r="5.5"/>','<path class="ln" d="M31 46 Q38 36 45 46 M55 46 Q62 36 69 46"/>'];
+let mood=-1;
+function buddy(w,cur){
+ const p=S.daily?w/S.daily:Math.min(1,w/500);
+ const m=w<=0?0:p<.34?1:p<.67?2:p<1?3:4;
+ const msg=[cur>0?"Write today to keep your "+cur+"-day streak alive.":"Ready when you are. One sentence gets us started.",
+  "You've started. That's the hardest part.","Nice rhythm. Keep going.","Almost there. Just a little more.",
+  S.daily?"Daily target hit! That's a win. Anything more is a bonus.":"Great session today. That's a win."][m];
+ $("msg").textContent=msg;
+ if(m===mood)return;
+ $("eyes").innerHTML=EYES[m];$("mouth").setAttribute("d",MOUTH[m]);
+ $("mouth").setAttribute("class",m===4?"fl":"ln");
+ $("ck1").setAttribute("opacity",m>=3?.45:0);$("ck2").setAttribute("opacity",m>=3?.45:0);
+ $("spk").setAttribute("opacity",m===4?1:0);
+ if(mood>=0){const a=$("av");a.classList.remove("pop");void a.getBoundingClientRect();a.classList.add("pop")}
+ mood=m}
+function render(){
+ const L=S.log[day()]||{start:count,sec:0};
+ $("count").textContent=count.toLocaleString();$("goal").textContent=S.goal?S.goal.toLocaleString():"–";
+ const p=S.goal?Math.min(100,count/S.goal*100):0;$("fill").style.width=p+"%";
+ $("pct").textContent=S.goal?p.toFixed(1)+"% complete · "+Math.max(0,S.goal-count).toLocaleString()+" to go":"Set a goal to begin.";
+ $("today").textContent=Math.max(0,count-L.start).toLocaleString();$("time").textContent=fmt(L.sec||0);
+ const cur=streaks();
+ const w=Math.max(0,count-L.start);
+ if(S.daily){$("dfill").style.width=Math.min(100,w/S.daily*100)+"%";
+  $("dpct").innerHTML=w>=S.daily?'<span class="ok">Daily target hit: '+w.toLocaleString()+' of '+S.daily.toLocaleString()+' words.</span>':(S.daily-w).toLocaleString()+" words to today's target of "+S.daily.toLocaleString()+"."}
+ buddy(w,cur);
+ const days=Object.keys(S.log).sort().slice(-14);
+ if(!S.goal||days.length<2){return}
+ const net=days.reduce((a,k)=>a+Math.max(0,S.log[k].end-S.log[k].start),0);
+ const span=Math.max(1,Math.round((new Date(day())-new Date(days[0]))/864e5)+1);
+ const pace=net/span,left=S.goal-count;let h="";
+ if(left<=0){h='<span class="ok">Goal reached.</span>'}
+ else if(pace<=0){h="No net progress recently, so there's no forecast yet."}
+ else{const dt=new Date(Date.now()+Math.ceil(left/pace)*864e5);
+  h="At "+Math.round(pace).toLocaleString()+" words/day (last "+span+" days) you finish around <b>"+dt.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})+"</b>.";
+  if(S.deadline){const dl=Math.max(1,Math.ceil((new Date(S.deadline)-new Date(day()))/864e5)),need=left/dl;
+   h+=need>pace?'<br><span class="bad">Behind: you need '+Math.round(need).toLocaleString()+'/day to hit '+S.deadline+'.</span>':'<br><span class="ok">On track for '+S.deadline+' (needs '+Math.round(need).toLocaleString()+'/day).</span>'}}
+ $("fc").innerHTML=h}
+$("save").onclick=()=>{S.goal=parseInt($("g").value)||S.goal;S.daily=parseInt($("dt").value)||S.daily;S.deadline=$("d").value||S.deadline;persist();render()};
+Office.onReady(()=>{load();$("g").value=S.goal||"";$("dt").value=S.daily||"";$("d").value=S.deadline||"";tick();setInterval(tick,TICK)});
+</script></body></html>
