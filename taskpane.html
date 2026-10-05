@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<!-- Wordavator. Copyright (c) 2026 Pauline Clooney. All rights reserved. Proprietary software: copying, modifying, redistributing or hosting this code without written permission is prohibited. See LICENSE. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wordavator</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+:root{--bg:#f6f7f9;--ink:#1d2733;--mute:#5d6b7a;--line:#d9dee5;--acc:#c98a00;--ok:#1f7a6d;--warn:#b4432f}
+@media(prefers-color-scheme:dark){:root{--bg:#1a2029;--ink:#e8ecf1;--mute:#98a4b3;--line:#2f3844;--acc:#e8ae2e;--ok:#4fb5a5;--warn:#e27a65}}
+*{box-sizing:border-box}body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+.big{font:600 44px/1 Georgia,serif}.sub{color:var(--mute)}
+.bar{height:10px;background:var(--line);border-radius:5px;margin:12px 0 4px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9f1c,#ff5d8f);transition:width .4s}
+.row{display:flex;gap:16px;margin:18px 0}.row div{flex:1}.n{font:600 22px Georgia,serif}
+.box{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+label{display:block;color:var(--mute);margin:8px 0 3px}input,textarea{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink);font:inherit}
+button{margin-top:10px;padding:7px 14px;border:0;border-radius:4px;background:var(--ink);color:var(--bg);font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ok{color:var(--ok)}.bad{color:var(--warn)}
+.buddy{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.buddy svg{width:104px;height:104px;flex:none}
+.buddy p{margin:0;font-weight:600}
+.face{fill:var(--acc)}.ln{stroke:#1d2733;fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.fl{fill:#1d2733}
+.pop{animation:pop .5s}
+@keyframes pop{40%{transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){body:not(.fm) .pop{animation:none}}
+textarea{resize:vertical}
+.card{border-left:4px solid var(--acc);background:rgba(201,138,0,.12);padding:10px 12px;border-radius:4px;margin:0 0 16px}.card b{display:block;margin-bottom:2px}
+.rest{display:flex;flex-wrap:wrap;gap:6px 12px}.rest label{display:inline-flex;align-items:center;gap:4px;margin:0;color:var(--ink)}.rest input{width:auto}
+.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.bar{position:relative}.tk{position:absolute;top:0;bottom:0;width:2px;background:var(--bg)}
+#cel{border-left-color:var(--ok);background:rgba(31,122,109,.14);font-weight:600}
+#cf{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.cf{position:absolute;top:-14px;width:8px;height:12px;border-radius:2px;animation:fall 2.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media(prefers-reduced-motion:reduce){body:not(.fm) #cf{display:none}}
+#ms{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:4px}#ms .ok{font-weight:600}
+.buddy svg{overflow:visible}
+.hd{fill:var(--acc);stroke:#1d2733;stroke-width:3}
+#arms{opacity:0;transition:opacity .3s}.cheer #arms{opacity:1}
+.arm.l{transform-origin:16px 62px}.arm.r{transform-origin:84px 62px}
+.cheer .arm.l{animation:wl .35s ease-in-out infinite alternate}.cheer .arm.r{animation:wr .35s ease-in-out infinite alternate}
+@keyframes wl{from{transform:rotate(-14deg)}to{transform:rotate(10deg)}}
+@keyframes wr{from{transform:rotate(14deg)}to{transform:rotate(-10deg)}}
+.cheer #spk{animation:tw .5s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.35}to{opacity:1}}
+.dance{animation:dance 1.2s ease-in-out;transform-origin:50% 100%}
+@keyframes dance{0%,100%{transform:none}12%{transform:scale(1.1,.9)}30%{transform:translateY(calc(var(--h,10px) * -1)) rotate(-9deg) scale(.96,1.06)}48%{transform:scale(1.1,.9)}66%{transform:translateY(calc(var(--h,10px) * -1)) rotate(9deg) scale(.96,1.06)}84%{transform:translateY(calc(var(--h,10px) * -.4)) rotate(-4deg)}}
+@media(prefers-reduced-motion:reduce){body:not(.fm) .dance,body:not(.fm) .cheer .arm.l,body:not(.fm) .cheer .arm.r,body:not(.fm) .cheer #spk{animation:none}}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px}.chead b{margin:0}.sm{margin:0;padding:3px 10px;font-size:12px}
+#spl{position:fixed;inset:0;z-index:50;overflow:hidden;color:#fff;transition:opacity .5s}
+#spl[hidden]{display:none}#spl.out{opacity:0}
+.sl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background-size:300% 300%;animation:bgs 8s ease infinite,fin .5s both}
+.s1{background-image:linear-gradient(135deg,#ff9f1c,#ff5d8f,#ffd23f)}
+.s2{background-image:linear-gradient(135deg,#3a86ff,#8338ec,#06d6a0)}
+@keyframes bgs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes fin{from{opacity:0}}
+.sp-top{font-size:14px;letter-spacing:.14em;text-transform:uppercase;opacity:.95;margin-bottom:8px}
+.sp-big{font:700 64px/1 Georgia,serif;text-shadow:0 4px 18px rgba(0,0,0,.2)}
+.sp-lab{font-size:20px;font-weight:600;margin-top:4px}.sp-sub{margin-top:10px;opacity:.97;max-width:260px}
+.bub{position:absolute;bottom:-70px;border-radius:50%;background:rgba(255,255,255,.22);animation:rise 7s linear infinite}
+@keyframes rise{to{transform:translateY(-115vh)}}
+.pop-in{animation:popin .7s cubic-bezier(.2,1.4,.4,1) both}@keyframes popin{from{opacity:0;transform:scale(.6)}}
+.sp-nav{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:6px}
+.dot{display:inline-block;width:8px;height:8px;margin:0 3px;border-radius:50%;background:rgba(255,255,255,.45)}.dot.on{background:#fff}
+#spSkip{margin:0 0 0 10px;padding:4px 12px;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.6)}
+.ringw{position:relative;width:190px;height:190px}.ringw svg{width:100%;height:100%}
+.rg-b{fill:none;stroke:rgba(255,255,255,.3);stroke-width:12}
+.rg-f{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;stroke-dasharray:440;stroke-dashoffset:0;transition:stroke-dashoffset 2s cubic-bezier(.3,.7,.2,1)}
+.ringc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#mini{display:none;position:fixed;top:10px;right:10px;z-index:20;flex-direction:column;align-items:flex-end;gap:8px}
+body.isMini #mini{display:flex}body.isMini #main{display:none}
+.mbtn{position:relative;width:84px;height:84px;border:0;background:transparent;padding:0;margin:0;border-radius:50%;cursor:pointer}
+.mbtn svg.ring{position:absolute;inset:0;width:100%;height:100%}
+.rb{fill:none;stroke:var(--line);stroke-width:6}.rf{fill:none;stroke:var(--acc);stroke-width:6;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:289;transition:stroke-dashoffset .6s}
+#mAv{position:absolute;inset:10px;display:block}#mAv svg{width:100%;height:100%}
+#mp{width:220px;margin:0;background:var(--bg);box-shadow:0 6px 24px rgba(0,0,0,.18)}
+@media(prefers-reduced-motion:reduce){body:not(.fm) .sl,body:not(.fm) .bub,body:not(.fm) .pop-in{animation:none}body:not(.fm) .rg-f,body:not(.fm) .rf{transition:none}}
+
+@media(prefers-reduced-motion:reduce){body:not(.fm) :is(.mx-legL,.mx-legR,.mx-armL,.mx-armR,.mx-sway,.mx-hop,.mx-shadow,.mx-dash,.mx-blink,.mx-talk,.mx-sm,.mx-jit,.mx-sp,.mx-shake){animation:none}body:not(.fm) .mx-cc.mx-hit{animation:none;fill:#c48a58}}
+.cheer .mx-armL,.cheer .mx-armR{animation-duration:.4s}.cheer .mx-hop{animation-duration:.3s}
+#av{cursor:pointer}#av:focus-visible{outline:2px solid #4b3326;outline-offset:2px;border-radius:8px}
+#bubs{display:flex;gap:8px;margin:0 0 14px}#bubs[hidden]{display:none}
+.bubc{flex:1;position:relative;text-align:center;background:#fff6df;color:#4b3326;border:3px solid #4b3326;border-radius:14px;padding:6px 4px 5px;animation:mxpopb .35s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+.bubc::before{content:"";position:absolute;top:-10px;left:50%;margin-left:-7px;border:7px solid transparent;border-top:0;border-bottom-color:#4b3326}
+.bubc::after{content:"";position:absolute;top:-5px;left:50%;margin-left:-5px;border:5px solid transparent;border-top:0;border-bottom-color:#fff6df}
+.bubc span{display:block;font-size:11px}.bubc b{display:block;font:600 19px Georgia,serif}
+@keyframes mxpopb{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){body:not(.fm) .bubc{animation:none}}
+.mx-legL{transform-origin:272px 382px;animation:mxstepL 1.2s ease-in-out infinite}
+.mx-legR{transform-origin:408px 382px;animation:mxstepR 1.2s ease-in-out infinite;animation-delay:-0.6s}
+.mx-armL{transform-origin:190px 308px;animation:mxarm 1.2s ease-in-out infinite}
+.mx-armR{transform-origin:490px 308px;animation:mxarm 1.2s ease-in-out infinite;animation-delay:-0.6s}
+.mx-sway{transform-origin:340px 400px;animation:mxsway 1.2s ease-in-out infinite}
+.mx-hop{animation:mxhop 0.6s ease-in-out infinite}
+.mx-shadow{transform-box:fill-box;transform-origin:center;animation:mxshadow 0.6s ease-in-out infinite}
+.mx-dash{animation:mxslide 1.2s linear infinite}
+.mx-blink{transform-box:fill-box;transform-origin:center;animation:mxblink 4s infinite}
+.mx-talk{transform-origin:340px 168px;animation:mxtalk 0.9s ease-in-out infinite}
+.mx-sm{transform-origin:340px 166px;animation:mxsm 2.4s ease-in-out infinite}
+.mx-jit{animation:mxjit 1.1s ease-in-out infinite}
+.mx-sp{transform-box:fill-box;transform-origin:center;animation:mxsp 1.2s ease-in-out infinite}
+.mx-shake{animation:mxshake 0.14s linear infinite}
+.mx-cc{fill:#fff6df}
+.mx-cc.mx-hit{animation:mxhit 0.7s ease-out}
+.mx-tt{font-family:'Segoe UI',system-ui,sans-serif;font-weight:500;fill:#4b3326;text-anchor:middle;pointer-events:none}
+@keyframes mxhit{0%{fill:#c48a58}35%{fill:#c48a58}100%{fill:#fff6df}}
+@keyframes mxstepL{0%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-16px) rotate(-14deg)}50%,100%{transform:translateY(0) rotate(0deg)}}
+@keyframes mxstepR{0%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-16px) rotate(14deg)}50%,100%{transform:translateY(0) rotate(0deg)}}
+@keyframes mxarm{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}
+@keyframes mxsway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes mxhop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes mxshadow{0%,100%{transform:scaleX(1);opacity:0.22}50%{transform:scaleX(0.9);opacity:0.14}}
+@keyframes mxslide{to{transform:translateX(-100px)}}
+@keyframes mxblink{0%,88%,100%{transform:scaleY(1)}93%{transform:scaleY(0.08)}}
+@keyframes mxtalk{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.5)}}
+@keyframes mxsm{0%,100%{transform:scale(1,1)}50%{transform:scale(1.06,0.85)}}
+@keyframes mxjit{0%,100%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-2px)}}
+@keyframes mxsp{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+@keyframes mxshake{0%,100%{transform:translate(0,0)}25%{transform:translate(-0.8px,0.4px)}50%{transform:translate(0.8px,-0.4px)}75%{transform:translate(-0.5px,-0.6px)}}
+</style></head><body>
+<div id="main">
+<div id="wb" class="card" hidden>
+ <div id="wbHead">
+  <div class="chead"><b id="wbTitle">Welcome back</b><button id="wbX" class="ghost sm">Dismiss</button></div>
+  <div class="sub" id="wbWhen"></div>
+  <div id="wbStats" class="row" style="margin:8px 0 0">
+   <div><div class="n" id="wbWords">0</div><div class="sub">words written</div></div>
+   <div><div class="n" id="wbTime">0m</div><div class="sub">writing time</div></div>
+   <div id="wbPaceBox"><div class="n" id="wbPace">0</div><div class="sub">words/hour</div></div>
+  </div>
+  <div class="sub" id="wbTotal" style="margin-top:6px"></div>
+ </div>
+ <div id="wbPrompt" hidden style="margin-top:12px">
+  <div class="chead"><b>Next time start prompt</b><button id="shClear" class="ghost sm">Clear</button></div>
+  <div id="shText"></div><div class="sub" id="shDate"></div>
+ </div>
+</div>
+<div class="buddy" id="bd">
+ <svg id="av" viewBox="110 50 460 460" role="button" tabindex="0" aria-label="Wordavator. Click to show or hide your word counts."><defs>
+<linearGradient id="mxfade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000"></stop><stop offset="0.25" stop-color="#fff"></stop><stop offset="0.75" stop-color="#fff"></stop><stop offset="1" stop-color="#000"></stop></linearGradient>
+<mask id="mxgm" maskUnits="userSpaceOnUse" x="110" y="480" width="460" height="30"><rect x="110" y="480" width="460" height="30" fill="url(#mxfade)"></rect></mask>
+<clipPath id="mxcl"><circle cx="298" cy="138" r="27"></circle></clipPath>
+<clipPath id="mxcr"><circle cx="382" cy="138" r="27"></circle></clipPath>
+<polygon id="mxStar" points="0,-14 3.5,-4.9 13.3,-4.3 5.7,1.9 8.2,11.3 0,6 -8.2,11.3 -5.7,1.9 -13.3,-4.3 -3.5,-4.9" fill="#c48a58" stroke="#4b3326" stroke-width="2.5" stroke-linejoin="round"></polygon>
+</defs>
+<g mask="url(#mxgm)">
+<g class="mx-dash" fill="#c48a58" opacity="0.7">
+<rect x="0" y="492" width="40" height="6" rx="3"></rect><rect x="100" y="492" width="40" height="6" rx="3"></rect><rect x="200" y="492" width="40" height="6" rx="3"></rect><rect x="300" y="492" width="40" height="6" rx="3"></rect><rect x="400" y="492" width="40" height="6" rx="3"></rect><rect x="500" y="492" width="40" height="6" rx="3"></rect><rect x="600" y="492" width="40" height="6" rx="3"></rect><rect x="700" y="492" width="40" height="6" rx="3"></rect>
+</g>
+</g>
+<ellipse class="mx-shadow" cx="340" cy="478" rx="115" ry="8" fill="#4b3326" opacity="0.22"></ellipse>
+<g transform="translate(0 14)">
+<g class="mx-legL">
+<path d="M272 380 L272 430" stroke="#4b3326" stroke-width="22" stroke-linecap="round" fill="none"></path>
+<path d="M272 380 L272 430" stroke="#c48a58" stroke-width="13" stroke-linecap="round" fill="none"></path>
+<circle id="mxc2" class="mx-cc" cx="272" cy="442" r="18" stroke="#4b3326" stroke-width="4"></circle>
+<text id="mxt2" class="mx-tt" x="272" y="448" font-size="16"></text>
+</g>
+<g class="mx-legR">
+<path d="M408 380 L408 430" stroke="#4b3326" stroke-width="22" stroke-linecap="round" fill="none"></path>
+<path d="M408 380 L408 430" stroke="#c48a58" stroke-width="13" stroke-linecap="round" fill="none"></path>
+<circle id="mxc3" class="mx-cc" cx="408" cy="442" r="18" stroke="#4b3326" stroke-width="4"></circle>
+<text id="mxt3" class="mx-tt" x="408" y="448" font-size="16"></text>
+</g>
+<g class="mx-sway"><g class="mx-hop">
+<g class="mx-armL">
+<path d="M190 308 L148 330" stroke="#4b3326" stroke-width="17" stroke-linecap="round" fill="none"></path>
+<path d="M190 308 L148 330" stroke="#c48a58" stroke-width="10" stroke-linecap="round" fill="none"></path>
+<circle id="mxc0" class="mx-cc" cx="142" cy="334" r="14" stroke="#4b3326" stroke-width="4"></circle>
+<text id="mxt0" class="mx-tt" x="142" y="339" font-size="13"></text>
+</g>
+<g class="mx-armR">
+<path d="M490 308 L532 330" stroke="#4b3326" stroke-width="17" stroke-linecap="round" fill="none"></path>
+<path d="M490 308 L532 330" stroke="#c48a58" stroke-width="10" stroke-linecap="round" fill="none"></path>
+<circle id="mxc1" class="mx-cc" cx="538" cy="334" r="14" stroke="#4b3326" stroke-width="4"></circle>
+<text id="mxt1" class="mx-tt" x="538" y="339" font-size="13"></text>
+</g>
+<rect x="190" y="245" width="300" height="155" rx="64" fill="#c48a58" stroke="#4b3326" stroke-width="5" stroke-linejoin="round"></rect>
+<rect x="240" y="66" width="200" height="158" rx="24" fill="#fff6df" stroke="#4b3326" stroke-width="5" stroke-linejoin="round"></rect>
+<rect x="212" y="214" width="256" height="36" rx="18" fill="#4b3326" stroke="#4b3326" stroke-width="5"></rect>
+<circle id="mxc4" class="mx-cc" cx="206" cy="232" r="21" stroke="#4b3326" stroke-width="5"></circle>
+<text id="mxt4" class="mx-tt" x="206" y="238" font-size="17"></text>
+<circle id="mxc5" class="mx-cc" cx="474" cy="232" r="21" stroke="#4b3326" stroke-width="5"></circle>
+<text id="mxt5" class="mx-tt" x="474" y="238" font-size="17"></text>
+<g fill="#fff6df" stroke="#4b3326" stroke-width="3">
+<circle cx="260" cy="292" r="17"></circle><circle cx="300" cy="292" r="17"></circle><circle cx="340" cy="292" r="17"></circle><circle cx="380" cy="292" r="17"></circle><circle cx="420" cy="292" r="17"></circle>
+<circle cx="260" cy="340" r="17"></circle><circle cx="300" cy="340" r="17"></circle><circle cx="340" cy="340" r="17"></circle><circle cx="380" cy="340" r="17"></circle><circle cx="420" cy="340" r="17"></circle>
+</g>
+<g font-family="'Segoe UI',system-ui,sans-serif" font-size="15" font-weight="500" text-anchor="middle" fill="#4b3326">
+<text x="260" y="297">W</text><text x="300" y="297">O</text><text x="340" y="297">R</text><text x="380" y="297">D</text><text x="420" y="297">A</text>
+<text x="260" y="345">V</text><text x="300" y="345">A</text><text x="340" y="345">T</text><text x="380" y="345">O</text><text x="420" y="345">R</text>
+</g>
+
+<g id="mx-happy" class="mx-mood">
+<path d="M282 94 Q298 86 314 94" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M366 94 Q382 86 398 94" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<g class="mx-blink"><circle cx="298" cy="134" r="27" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle><ellipse cx="298" cy="136" rx="13" ry="16" fill="#4b3326"></ellipse><circle cx="302" cy="130" r="4.5" fill="#fff6df"></circle></g>
+<g class="mx-blink"><circle cx="382" cy="134" r="27" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle><ellipse cx="382" cy="136" rx="13" ry="16" fill="#4b3326"></ellipse><circle cx="386" cy="130" r="4.5" fill="#fff6df"></circle></g>
+<g class="mx-talk"><path d="M316 172 Q340 204 364 172 Z" fill="#4b3326" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></path><path d="M328 191 Q340 185 352 191 Q340 200 328 191 Z" fill="#c48a58"></path></g>
+</g>
+
+<g id="mx-sleepy" class="mx-mood" style="display:none">
+<path d="M282 98 Q298 94 314 100" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M366 100 Q382 94 398 98" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<circle cx="298" cy="134" r="27" fill="#c48a58" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="382" cy="134" r="27" fill="#c48a58" stroke="#4b3326" stroke-width="4"></circle>
+<path d="M282 134 Q298 150 314 134" fill="none" stroke="#4b3326" stroke-width="5" stroke-linecap="round"></path>
+<path d="M366 134 Q382 150 398 134" fill="none" stroke="#4b3326" stroke-width="5" stroke-linecap="round"></path>
+<ellipse cx="340" cy="186" rx="10" ry="12" fill="#4b3326" stroke="#4b3326" stroke-width="4"></ellipse>
+</g>
+
+<g id="mx-surprised" class="mx-mood" style="display:none">
+<path d="M278 80 Q298 68 318 80" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M362 80 Q382 68 402 80" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<circle cx="298" cy="134" r="31" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="382" cy="134" r="31" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<g class="mx-jit"><circle cx="298" cy="134" r="9" fill="#4b3326"></circle><circle cx="382" cy="134" r="9" fill="#4b3326"></circle><circle cx="301" cy="131" r="3" fill="#fff6df"></circle><circle cx="385" cy="131" r="3" fill="#fff6df"></circle></g>
+<ellipse cx="340" cy="190" rx="14" ry="20" fill="#4b3326" stroke="#4b3326" stroke-width="4"></ellipse>
+</g>
+
+<g id="mx-grumpy" class="mx-mood" style="display:none">
+<path d="M282 92 L316 100" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M364 100 L398 92" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<circle cx="298" cy="134" r="27" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="382" cy="134" r="27" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="294" cy="142" r="10" fill="#4b3326"></circle>
+<circle cx="378" cy="142" r="10" fill="#4b3326"></circle>
+<path d="M272 130 A27 27 0 0 1 324 130 Z" fill="#c48a58" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></path>
+<path d="M356 130 A27 27 0 0 1 408 130 Z" fill="#c48a58" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></path>
+<path d="M316 194 Q340 176 364 194" fill="none" stroke="#4b3326" stroke-width="6" stroke-linecap="round"></path>
+</g>
+
+<g id="mx-excited" class="mx-mood" style="display:none">
+<path d="M280 88 Q298 78 316 88" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M364 88 Q382 78 400 88" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<circle cx="298" cy="134" r="29" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="382" cy="134" r="29" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<g transform="translate(298 135) scale(1.2)"><use class="mx-sp" href="#mxStar"></use></g>
+<g transform="translate(382 135) scale(1.2)"><use class="mx-sp" href="#mxStar" style="animation-delay:-0.4s"></use></g>
+<g class="mx-talk"><path d="M312 172 Q340 218 368 172 Z" fill="#4b3326" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></path><path d="M326 194 Q340 187 354 194 Q340 205 326 194 Z" fill="#c48a58"></path></g>
+</g>
+
+<g id="mx-winking" class="mx-mood" style="display:none">
+<path d="M282 92 Q298 84 314 92" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<path d="M366 90 Q382 84 398 92" fill="none" stroke="#4b3326" stroke-width="3.5" stroke-linecap="round"></path>
+<circle cx="298" cy="134" r="27" fill="#fff6df" stroke="#4b3326" stroke-width="4"></circle>
+<ellipse cx="298" cy="136" rx="13" ry="16" fill="#4b3326"></ellipse>
+<circle cx="302" cy="130" r="4.5" fill="#fff6df"></circle>
+<circle cx="382" cy="134" r="27" fill="#c48a58" stroke="#4b3326" stroke-width="4"></circle>
+<path d="M366 138 Q382 120 398 138" fill="none" stroke="#4b3326" stroke-width="5" stroke-linecap="round"></path>
+<g class="mx-sm"><path d="M316 172 Q344 206 366 168 Z" fill="#4b3326" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></path></g>
+</g>
+
+<g id="mx-determined" class="mx-mood" style="display:none"><g class="mx-shake">
+<path d="M268 82 L322 108" stroke="#4b3326" stroke-width="7" stroke-linecap="round"></path>
+<path d="M358 108 L412 82" stroke="#4b3326" stroke-width="7" stroke-linecap="round"></path>
+<circle cx="298" cy="138" r="27" fill="#fff6df"></circle>
+<circle cx="382" cy="138" r="27" fill="#fff6df"></circle>
+<circle cx="298" cy="148" r="8" fill="#4b3326"></circle>
+<circle cx="382" cy="148" r="8" fill="#4b3326"></circle>
+<g clip-path="url(#mxcl)"><polygon points="250,100 350,100 350,146 250,122" fill="#c48a58" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></polygon></g>
+<g clip-path="url(#mxcr)"><polygon points="330,100 430,100 430,122 330,146" fill="#c48a58" stroke="#4b3326" stroke-width="4" stroke-linejoin="round"></polygon></g>
+<circle cx="298" cy="138" r="27" fill="none" stroke="#4b3326" stroke-width="4"></circle>
+<circle cx="382" cy="138" r="27" fill="none" stroke="#4b3326" stroke-width="4"></circle>
+<rect x="311" y="176" width="58" height="24" rx="9" fill="#fff6df" stroke="#4b3326" stroke-width="5"></rect>
+<path d="M325.5 177 L325.5 199 M340 177 L340 199 M354.5 177 L354.5 199 M312 188 L368 188" fill="none" stroke="#4b3326" stroke-width="3"></path>
+</g></g>
+</g></g>
+</g>
+
+</svg>
+ <p id="msg" aria-live="polite" style="flex:1">Ready when you are.</p>
+ <button id="minBtn" class="ghost sm" style="flex:none" aria-label="Minimise to avatar">Minimise</button>
+</div>
+<div id="bubs" hidden><div class="bubc" style="--d:0s"><span>Total words</span><b id="bTot">0</b></div><div class="bubc" style="--d:.1s"><span>Yesterday</span><b id="bYes">0</b></div><div class="bubc" style="--d:.2s"><span>This session</span><b id="bSes">0</b></div></div>
+<div id="cel" class="card" hidden role="status"></div>
+<div class="sub">Project total</div>
+<div class="big"><span id="count">0</span> <span class="sub" style="font:16px Segoe UI">/ <span id="goal">–</span> words</span></div>
+<div class="bar" role="progressbar" aria-label="Progress toward goal"><i id="fill"></i><b class="tk" style="left:10%"></b><b class="tk" style="left:25%"></b><b class="tk" style="left:50%"></b><b class="tk" style="left:75%"></b><b class="tk" style="left:95%"></b></div>
+<div class="sub" id="pct">Set a goal to begin.</div>
+<div class="sub" id="ms"></div>
+<div class="row" style="margin-bottom:4px">
+ <div><div class="n" id="sw">0</div><div class="sub">words this session</div></div>
+ <div><div class="n" id="st">0m</div><div class="sub">session time</div></div>
+</div>
+<button id="newSes" class="ghost sm" style="margin:0 0 10px">Start new session</button>
+<div class="row" style="margin-top:6px">
+ <div><div class="n" id="today">0</div><div class="sub">words today</div></div>
+ <div><div class="n" id="time">0m</div><div class="sub">writing time today</div></div>
+</div>
+<div class="bar" role="progressbar" aria-label="Progress toward daily target" style="margin-top:-6px"><i id="dfill" style="background:var(--ok)"></i></div>
+<div class="sub" id="dpct">Set a daily target below.</div>
+<div class="row">
+ <div><div class="n" id="streak">0 days</div><div class="sub" id="streakNote">current streak</div></div>
+ <div><div class="n" id="best">0 days</div><div class="sub">longest streak</div></div>
+</div>
+<div class="box"><b>Forecast</b><div id="fc" class="sub">Write for a day or two and the forecast will appear.</div></div>
+<div class="box"><b>Project settings</b>
+ <label for="g">Word count goal</label><input id="g" type="number" min="1" placeholder="e.g. 80000">
+ <label for="nm">Your first name</label><input id="nm" type="text" maxlength="30" autocomplete="given-name" placeholder="e.g. Sam">
+ <label for="dt">Daily word target</label><input id="dt" type="number" min="1" placeholder="e.g. 500">
+ <label for="d">Deadline (optional)</label><input id="d" type="date">
+ <div class="rest" style="margin-top:10px"><label><input type="checkbox" id="fm"> Always play full celebration animations</label></div>
+ <div class="rest" style="margin-top:6px"><label><input type="checkbox" id="spOn"> Show splash screens when I open Wordavator</label></div>
+ <button id="save">Save goal</button> <button id="prev" class="ghost">Preview celebration</button> <button id="spReplay" class="ghost">Replay splash</button></div>
+<div class="box"><b>Rest days</b><div class="sub">Days you don't write. They won't break your streak.</div>
+<div class="rest" id="rest" role="group" aria-label="Rest days" style="margin-top:8px"><label><input type="checkbox" value="1"> Mon</label><label><input type="checkbox" value="2"> Tue</label><label><input type="checkbox" value="3"> Wed</label><label><input type="checkbox" value="4"> Thu</label><label><input type="checkbox" value="5"> Fri</label><label><input type="checkbox" value="6"> Sat</label><label><input type="checkbox" value="0"> Sun</label></div></div>
+<div class="box"><b>Next time start prompt</b>
+ <label for="pr">Leave yourself one line for your next session</label>
+ <textarea id="pr" rows="3" maxlength="280" placeholder="e.g. Start with the argument scene in chapter 4"></textarea>
+ <button id="savePrompt">Save prompt</button>
+ <div class="sub" id="prStatus" aria-live="polite"></div></div>
+<div class="sub" style="margin-top:24px;font-size:12px">&copy; 2026 Pauline Clooney. All rights reserved. &middot; Version 2.2<span id="rm"></span></div>
+</div>
+<div id="cf" aria-hidden="true"></div>
+<div id="spl" hidden><div id="spBody"></div><div class="sp-nav"><span id="spDots"></span><button id="spSkip">Skip</button></div></div>
+<div id="mini">
+ <button id="mBtn" class="mbtn" aria-label="Show session progress" aria-expanded="false">
+  <svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="rb" cx="50" cy="50" r="46"/><circle id="mRing" class="rf" cx="50" cy="50" r="46" transform="rotate(-90 50 50)"/></svg>
+  <span id="mAv"></span>
+ </button>
+ <div id="mp" class="card" hidden>
+  <b>This session</b>
+  <div class="row" style="margin:6px 0"><div><div class="n" id="mpW">0</div><div class="sub">words</div></div><div><div class="n" id="mpT">0m</div><div class="sub">time</div></div></div>
+  <div class="bar" style="margin:4px 0"><i id="mpFill" style="background:var(--ok)"></i></div>
+  <div class="sub" id="mpDay"></div>
+  <div class="sub" id="mpMsg" style="margin-top:6px;font-weight:600"></div>
+  <button id="mOpen" class="ghost sm" style="margin-top:8px">Open full panel</button>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let S={goal:0,daily:0,deadline:"",log:{},startDate:""},count=0,lastChange=0,lastCount=null,store;
+const day=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const IDLE=60000,TICK=2000;
+function load(){try{const v=Office.context.document.settings.get("wordavator");if(v)S=JSON.parse(v)}catch(e){}}
+function persist(){try{Office.context.document.settings.set("wordavator",JSON.stringify(S));Office.context.document.settings.saveAsync()}catch(e){}}
+async function words(){return Word.run(async c=>{const b=c.document.body;b.load("text");await c.sync();const t=b.text.trim();return t?t.split(/\s+/).length:0})}
+function fmt(s){const m=Math.round(s/60);return m<60?m+"m":Math.floor(m/60)+"h "+(m%60)+"m"}
+async function tick(){
+ count=await words();const t=day(),now=Date.now();
+ if(!S.startDate)S.startDate=t;
+ const L=S.log[t]||(S.log[t]={start:count,end:count,sec:0});
+ if(lastCount!==null&&count!==lastCount)lastChange=now;
+ if(!ses){ses={d:t,w0:count,w:0,sec:0,t0:now};S.sessions=(S.sessions||[]).concat(ses).slice(-30)}
+ if(now-lastChange<IDLE){L.sec+=TICK/1000;ses.sec+=TICK/1000}
+ ses.w=count-ses.w0;
+ if(S.goal){const reached=MS.filter(m=>count>=S.goal*m/100);
+  if(S.hitGoal!==S.goal){S.hit=reached;S.hitGoal=S.goal}
+  else{S.hit=(S.hit||[]).filter(m=>count>=S.goal*(m-3)/100);const nw=reached.filter(m=>!(S.hit||[]).includes(m));
+   if(nw.length){S.hit=[...(S.hit||[]),...nw];if(lastCount!==null)celebrate(Math.max(...nw))}}}
+ lastCount=count;L.end=count;S.total=count;persist();render()}
+const prev=k=>new Date(new Date(k+"T00:00:00Z")-864e5).toISOString().slice(0,10);
+const nxt=k=>new Date(new Date(k+"T00:00:00Z").getTime()+864e5).toISOString().slice(0,10);
+let restToday=false;
+function streaks(){
+ const set=new Set(Object.keys(S.log).filter(k=>S.log[k].end>S.log[k].start)),t=day();
+ const rest=new Set(S.rest||[]),isRest=k=>rest.has(new Date(k+"T00:00:00Z").getUTCDay());
+ restToday=isRest(t)&&!set.has(t);
+ const days=[...set].sort(),first=days[0];
+ let cur=0;
+ if(first){let k=set.has(t)?t:prev(t);
+  while(k>=first){if(set.has(k)){cur++;k=prev(k)}else if(isRest(k))k=prev(k);else break}}
+ const gapOK=(a,b)=>{for(let x=nxt(a);x<b;x=nxt(x))if(!isRest(x))return false;return true};
+ let best=0,run=0;
+ days.forEach((d,i)=>{run=i&&gapOK(days[i-1],d)?run+1:1;best=Math.max(best,run)});
+ const u=n=>n+(n===1?" day":" days");
+ $("streak").textContent=u(cur);$("best").textContent=u(Math.max(best,cur));
+ $("streakNote").textContent=cur&&!set.has(t)?(restToday?"rest day, streak safe":"write today to keep it"):"current streak";
+ return cur}
+const MOUTH=["M38 66 L62 66","M38 64 Q50 71 62 64","M36 62 Q50 77 64 62","M34 60 Q50 83 66 60","M34 60 Q50 86 66 60 Z"];
+const EYES=['<path class="ln" d="M32 46 L44 46 M56 46 L68 46"/>','<circle class="fl" cx="38" cy="44" r="5"/><circle class="fl" cx="62" cy="44" r="5"/>','<circle class="fl" cx="38" cy="44" r="5"/><circle class="fl" cx="62" cy="44" r="5"/>','<circle class="fl" cx="38" cy="44" r="5.5"/><circle class="fl" cx="62" cy="44" r="5.5"/>','<path class="ln" d="M31 46 Q38 36 45 46 M55 46 Q62 36 69 46"/>'];
+let mood=-1,celUntil=0,celMsg="";
+let ses=null,lastSes=null,lastTotal=0,welcomeDismissed=false;
+const MS=[10,25,50,75,95,100];
+function celebrate(t){
+ const n=S.name?", "+S.name:"";
+ celMsg={10:"10% done"+n+"! You've built real momentum.",25:"A quarter of the way there"+n+"!",50:"Halfway"+n+"! Half your goal is on the page.",75:"Three quarters done"+n+". The finish line is in sight.",95:"95%"+n+"! One last push to go.",100:"Project goal complete"+n+"! You did it. Time to celebrate."}[t];
+ celUntil=Date.now()+(t===100?15000:10000);if(S.mini){$("mp").hidden=false;$("mBtn").setAttribute("aria-expanded","true")}$("cel").textContent=celMsg;$("cel").hidden=false;window.scrollTo(0,0);
+ const a=$("av"),h={10:8,25:10,50:12,75:15,95:18,100:22}[t],it={10:1,25:2,50:2,75:3,95:4,100:6}[t];
+ a.classList.remove("dance");void a.getBoundingClientRect();
+ a.style.setProperty("--h",h+"px");a.style.animationIterationCount=it;a.classList.add("dance","cheer");
+ const c=$("cf"),cols=["#e8ae2e","#4fb5a5","#e27a65","#7aa2f7"];c.innerHTML="";
+ const burst=n=>{for(let i=0;i<n;i++){const e=document.createElement("i");e.className="cf";e.style.left=Math.random()*100+"%";e.style.background=cols[i%4];e.style.animationDelay=Math.random()*.5+"s";c.appendChild(e)}};
+ burst(Math.round(14+t*.45));if(t===100){setTimeout(()=>burst(45),1500);setTimeout(()=>burst(45),3000)}
+ setTimeout(()=>{c.innerHTML=""},t===100?6500:3500)}
+function setMascot(n){document.querySelectorAll("#av .mx-mood").forEach(g=>{g.style.display="none"});$("mx-"+n).style.display=""}
+function moodFor(sw,y){
+ if(sw<0)return["grumpy",0];
+ if(sw===0)return["sleepy",0];
+ if(y<=0)return["happy",0];
+ const r=sw/y,pc=Math.round(r*100);
+ return r>=1.5?["surprised",pc]:r>=1.05?["excited",pc]:r>=.95?["winking",pc]:r>=.5?["happy",pc]:["determined",pc]}
+const yWords=()=>{const L=S.log[prev(day())];return L?Math.max(0,L.end-L.start):0};
+const MXB=[13,13,16,16,17,17];let mxn=0;
+function mxTick(){mxn=(mxn%10)+1;const idx=(mxn-1)%6;
+ for(let i=0;i<6;i++){const t=$("mxt"+i),c=$("mxc"+i);
+  if(i===idx){t.textContent=String(mxn);t.setAttribute("font-size",mxn===10?Math.round(MXB[i]*.8):MXB[i]);c.classList.remove("mx-hit");void c.getBoundingClientRect();c.classList.add("mx-hit")}
+  else{t.textContent="";c.classList.remove("mx-hit")}}}
+mxTick();setInterval(mxTick,700);
+function toggleBubs(){if(document.body.classList.contains("isMini"))return;const b=$("bubs");b.hidden=!b.hidden}
+$("av").addEventListener("click",toggleBubs);
+$("av").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBubs()}});
+function bubUpdate(){const sv=ses?ses.w:0;$("bTot").textContent=count.toLocaleString();$("bYes").textContent=yWords().toLocaleString();$("bSes").textContent=(sv<0?"\u2212":"")+Math.abs(sv).toLocaleString()}
+function buddy(w,cur){
+ const mm=moodFor(ses?ses.w:0,yWords()),nm=mm[0],pc=mm[1],y=yWords();
+ const done=S.goal&&count>=S.goal,cel=Date.now()<celUntil,k=cel?"excited":nm,n=S.name?", "+S.name:"";
+ const msgs={
+  sleepy:restToday?"Rest day"+n+". Enjoy it, or write a little if you feel like it.":cur>0?"Write today to keep your "+cur+"-day streak alive"+n+".":"Ready when you are"+n+". One sentence gets us started.",
+  grumpy:"More words deleted than written this session"+n+".",
+  happy:y>0?"Good progress"+n+". "+pc+"% of yesterday.":"You've started"+n+". That's the hardest part.",
+  determined:"Keep going"+n+". "+pc+"% of yesterday so far.",
+  winking:"Matching yesterday"+n+". Steady wins.",
+  excited:"Beating yesterday"+n+"! "+pc+"% of yesterday.",
+  surprised:"A big day"+n+"! "+pc+"% of yesterday."};
+ $("msg").textContent=cel?celMsg:done?"Project goal complete"+n+"! You did it.":msgs[nm];
+ if(k===mood)return;
+ setMascot(k);
+ if(mood!==-1&&!cel){const a=$("av");a.classList.remove("pop","dance");void a.getBoundingClientRect();a.classList.add("pop")}
+ mood=k}
+function findLast(){
+ const ok=x=>x&&(x.sec>=15||x.w!==0),ss=(S.sessions||[]).filter(ok);
+ if(ss.length)return ss[ss.length-1];
+ const t=day(),k=Object.keys(S.log).sort().reverse().find(k=>k<t&&(S.log[k].sec>=60||S.log[k].end>S.log[k].start));
+ return k?{d:k,w:S.log[k].end-S.log[k].start,sec:S.log[k].sec}:null}
+const whenLabel=d=>{const t=day();return d===t?"Earlier today":d===prev(t)?"Yesterday":new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"})};
+function render(){
+ const L=S.log[day()]||{start:count,sec:0};
+ $("cel").hidden=Date.now()>=celUntil;$("av").classList.toggle("cheer",Date.now()<celUntil);
+ $("ms").innerHTML=S.goal?MS.map(m=>{const t=Math.round(S.goal*m/100),ok=count>=t;return '<span class="'+(ok?"ok":"")+'" title="'+m+'% of your goal">'+(ok?"✓ ":"")+m+"%</span>"}).join(""):"";
+ const ls=lastSes,showHead=!welcomeDismissed;
+ $("wbHead").hidden=!showHead;
+ if(showHead){
+  $("wbTitle").textContent=(ls?"Welcome back":"Welcome")+(S.name?", "+S.name:"");
+  $("wbStats").hidden=!ls;
+  if(ls){
+   const tm=ls.t0?", "+new Date(ls.t0).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";
+   $("wbWhen").textContent="Last session: "+whenLabel(ls.d)+tm;
+   $("wbWords").textContent=Math.max(0,ls.w).toLocaleString();$("wbTime").textContent=fmt(ls.sec||0);
+   const ph=ls.sec>=300?Math.round(Math.max(0,ls.w)/(ls.sec/3600)):0;
+   $("wbPaceBox").hidden=!ph;$("wbPace").textContent=ph.toLocaleString();
+   $("wbTotal").textContent=ls.w0!=null?"Project: "+ls.w0.toLocaleString()+" \u2192 "+(ls.w0+ls.w).toLocaleString()+" words":(lastTotal?"Project total last time: "+lastTotal.toLocaleString()+" words":"");
+  }else{$("wbWhen").textContent="No earlier writing session yet. Stats from this session will appear here next time.";$("wbTotal").textContent=""}
+ }
+ $("wbPrompt").hidden=!S.prompt;
+ if(S.prompt){$("shText").textContent=S.prompt;$("shDate").textContent=S.promptDate?"Left on "+new Date(S.promptDate+"T00:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long"}):""}
+ $("wb").hidden=!(showHead||S.prompt);
+ $("count").textContent=count.toLocaleString();$("goal").textContent=S.goal?S.goal.toLocaleString():"–";
+ const p=S.goal?Math.min(100,count/S.goal*100):0;$("fill").style.width=p+"%";
+ $("pct").textContent=S.goal?p.toFixed(1)+"% complete · "+Math.max(0,S.goal-count).toLocaleString()+" to go":"Set a goal to begin.";
+ $("today").textContent=Math.max(0,count-L.start).toLocaleString();$("time").textContent=fmt(L.sec||0);
+ $("sw").textContent=Math.max(0,ses?ses.w:0).toLocaleString();$("st").textContent=fmt(ses?ses.sec:0);
+ const cur=streaks();
+ const w=Math.max(0,count-L.start);
+ if(S.daily){$("dfill").style.width=Math.min(100,w/S.daily*100)+"%";
+  $("dpct").innerHTML=w>=S.daily?'<span class="ok">Daily target hit: '+w.toLocaleString()+' of '+S.daily.toLocaleString()+' words.</span>':(S.daily-w).toLocaleString()+" words to today's target of "+S.daily.toLocaleString()+"."}
+ buddy(w,cur);bubUpdate();miniUpdate(w);
+ const days=Object.keys(S.log).sort().slice(-14);
+ if(!S.goal||days.length<2){return}
+ const net=days.reduce((a,k)=>a+Math.max(0,S.log[k].end-S.log[k].start),0);
+ const span=Math.max(1,Math.round((new Date(day())-new Date(days[0]))/864e5)+1);
+ const pace=net/span,left=S.goal-count;let h="";
+ if(left<=0){h='<span class="ok">Goal reached.</span>'}
+ else if(pace<=0){h="No net progress recently, so there's no forecast yet."}
+ else{const dt=new Date(Date.now()+Math.ceil(left/pace)*864e5);
+  h="At "+Math.round(pace).toLocaleString()+" words/day (last "+span+" days) you finish around <b>"+dt.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"})+"</b>.";
+  if(S.deadline){const dl=Math.max(1,Math.ceil((new Date(S.deadline)-new Date(day()))/864e5)),need=left/dl;
+   h+=need>pace?'<br><span class="bad">Behind: you need '+Math.round(need).toLocaleString()+'/day to hit '+S.deadline+'.</span>':'<br><span class="ok">On track for '+S.deadline+' (needs '+Math.round(need).toLocaleString()+'/day).</span>'}}
+ $("fc").innerHTML=h}
+$("save").onclick=()=>{S.goal=parseInt($("g").value)||S.goal;S.daily=parseInt($("dt").value)||S.daily;S.name=$("nm").value.trim().slice(0,30);S.rest=[...document.querySelectorAll("#rest input:checked")].map(i=>+i.value);try{localStorage.setItem("wordavator_name",S.name)}catch(e){}S.deadline=$("d").value||S.deadline;persist();render()};
+$("savePrompt").onclick=()=>{S.prompt=$("pr").value.trim().slice(0,280);S.promptDate=S.prompt?day():"";persist();render();$("prStatus").textContent=S.prompt?"Saved for next time.":"Nothing to save."};
+$("newSes").onclick=()=>{ses=null;tick()};
+$("wbX").onclick=()=>{welcomeDismissed=true;render()};
+$("shClear").onclick=()=>{S.prompt="";S.promptDate="";$("pr").value="";persist();render();$("prStatus").textContent="Cleared."};
+$("rest").onchange=()=>{S.rest=[...document.querySelectorAll("#rest input:checked")].map(i=>+i.value);persist();render()};
+$("fm").onchange=()=>{S.fm=$("fm").checked;document.body.classList.toggle("fm",S.fm);persist()};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const reduced=()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches&&!S.fm}catch(e){return false}};
+function countTo(el,from,to,ms,f){
+ if(reduced()||from===to){el.textContent=f(to);return}
+ const t0=performance.now();
+ (function step(t){const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=f(Math.round(from+(to-from)*e));if(k<1)requestAnimationFrame(step)})(t0)}
+function bubbles(){let h="";for(let i=0;i<9;i++){const z=20+Math.random()*50;h+='<i class="bub" style="left:'+(Math.random()*100)+'%;width:'+z+'px;height:'+z+'px;animation-delay:'+(Math.random()*5)+'s;animation-duration:'+(5+Math.random()*5)+'s"></i>'}return h}
+function slideLast(){const w=Math.max(0,lastSes.w),n=S.name?", "+esc(S.name):"";
+ return{html:()=>'<div class="sl s1">'+bubbles()+'<div class="sp-top">Last session</div><div class="sp-big pop-in" id="spN" style="'+(w>99999?"font-size:48px":"")+'">0</div><div class="sp-lab">words written</div><div class="sp-sub">'+fmt(lastSes.sec||0)+' of writing &middot; '+whenLabel(lastSes.d)+'</div><div class="sp-sub" style="font-weight:600;margin-top:16px">'+(w>0?"Great work"+n+"! Let\u2019s build on it.":"Every session starts somewhere"+n+".")+'</div></div>',
+  run:()=>countTo($("spN"),0,w,1600,v=>v.toLocaleString())}}
+function slideLeft(){const g=S.goal,left=Math.max(0,100-count/g*100),pct=left>0?Math.max(1,Math.round(left)):0,togo=Math.max(0,g-count);
+ return{html:()=>'<div class="sl s2">'+bubbles()+'<div class="sp-top">Your project</div><div class="ringw"><svg viewBox="0 0 160 160" aria-hidden="true"><circle class="rg-b" cx="80" cy="80" r="70"/><circle id="spRing" class="rg-f" cx="80" cy="80" r="70" transform="rotate(-90 80 80)"/></svg><div class="ringc"><div class="sp-big" style="font-size:52px" id="spP">100%</div><div class="sp-lab" style="font-size:16px">left</div></div></div><div class="sp-sub">'+(togo>0?togo.toLocaleString()+" words to go &middot; goal "+g.toLocaleString():"Goal complete. Fantastic!")+'</div></div>',
+  run:()=>{const r=$("spRing");void r.getBoundingClientRect();r.style.strokeDashoffset=String(440*(1-left/100));countTo($("spP"),100,pct,2000,v=>v+"%")}}}
+let spTimer=null,spSlides=[];
+function showSlide(i){
+ clearTimeout(spTimer);
+ if(i>=spSlides.length){endSplash();return}
+ $("spBody").innerHTML=spSlides[i].html();
+ $("spDots").innerHTML=spSlides.map((_,k)=>'<span class="dot'+(k===i?" on":"")+'"></span>').join("");
+ spSlides[i].run();spSlides.cur=i;
+ spTimer=setTimeout(()=>showSlide(i+1),4600)}
+function endSplash(){clearTimeout(spTimer);const e=$("spl");e.classList.add("out");setTimeout(()=>{e.hidden=true;e.classList.remove("out")},500)}
+function splash(force){
+ if(S.noSplash&&!force)return;
+ spSlides=[];if(lastSes)spSlides.push(slideLast());if(S.goal)spSlides.push(slideLeft());
+ if(!spSlides.length)return;
+ $("spl").classList.remove("out");$("spl").hidden=false;showSlide(0)}
+function setMini(on,init){
+ S.mini=on;if(!init)persist();
+ document.body.classList.toggle("isMini",on);
+ const av=$("av");
+ if(on){av.setAttribute("tabindex","-1");av.setAttribute("role","img");$("mAv").appendChild(av)}else{av.setAttribute("tabindex","0");av.setAttribute("role","button");$("bd").insertBefore(av,$("bd").firstChild);$("mp").hidden=true;$("mBtn").setAttribute("aria-expanded","false")}
+ render()}
+function miniUpdate(w){
+ const pr=Math.min(1,w/(S.daily||500));
+ $("mRing").style.strokeDashoffset=String(289*(1-pr));
+ if(!S.mini)return;
+ $("mpW").textContent=Math.max(0,ses?ses.w:0).toLocaleString();$("mpT").textContent=fmt(ses?ses.sec:0);
+ $("mpFill").style.width=(pr*100)+"%";
+ $("mpDay").textContent=w.toLocaleString()+(S.daily?" of "+S.daily.toLocaleString():" words")+" today";
+ $("mpMsg").textContent=$("msg").textContent}
+$("spl").onclick=()=>showSlide((spSlides.cur||0)+1);
+$("spSkip").onclick=e=>{e.stopPropagation();endSplash()};
+$("spReplay").onclick=()=>splash(true);
+$("spOn").onchange=()=>{S.noSplash=!$("spOn").checked;persist()};
+$("minBtn").onclick=()=>setMini(true);
+$("mBtn").onclick=()=>{const h=$("mp").hidden;$("mp").hidden=!h;$("mBtn").setAttribute("aria-expanded",String(h))};
+$("mOpen").onclick=()=>setMini(false);
+let pv=0;
+$("prev").onclick=()=>{window.scrollTo(0,0);celebrate(MS[pv++%MS.length]);render()};
+Office.onReady(()=>{load();lastSes=findLast();lastTotal=S.total||0;count=lastTotal;$("g").value=S.goal||"";$("dt").value=S.daily||"";try{if(!S.name)S.name=localStorage.getItem("wordavator_name")||""}catch(e){}$("nm").value=S.name||"";
+ document.querySelectorAll("#rest input").forEach(i=>{i.checked=(S.rest||[]).includes(+i.value)});
+ $("pr").value=S.prompt||"";$("fm").checked=!!S.fm;$("spOn").checked=!S.noSplash;document.body.classList.toggle("fm",!!S.fm);try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)$("rm").textContent=" · Reduced motion is on in Windows";}catch(e){}$("d").value=S.deadline||"";if(S.mini)setMini(true,true);render();tick();setInterval(tick,TICK);splash(false)});
+</script></body></html>
